@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Pembuat Link Tes (Peneliti)</title>
+<style>
+  body{margin:0;background:#f5f6f8;color:#1d2330;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+  .wrap{max-width:720px;margin:0 auto;padding:20px}
+  .card{background:#fff;border:1px solid #dfe3ea;border-radius:14px;padding:22px;margin-bottom:14px}
+  h1{font-size:22px;margin:0 0 6px} h2{font-size:16px;margin:0 0 8px}
+  p,li{line-height:1.55;font-size:15px} .mut{color:#667085;font-size:14px}
+  input{width:100%;padding:12px;border:1px solid #dfe3ea;border-radius:10px;font-size:15px;margin:8px 0}
+  button,a.btn{font:inherit;display:inline-block;text-decoration:none;cursor:pointer;border:0;border-radius:12px;padding:12px 18px;font-weight:600;background:#2f5bea;color:#fff;margin:4px 8px 4px 0}
+  .sec{background:#e9ecf3!important;color:#1d2330!important}
+  .out{word-break:break-all;background:#f0f3fa;border-radius:10px;padding:12px;font-size:14px;margin:8px 0}
+  .warn{background:#fff4e5;border:1px solid #ffd8a8;border-radius:10px;padding:10px 12px;font-size:14px}
+  .ok{background:#ebfbee;border:1px solid #b2f2bb;border-radius:10px;padding:10px 12px;font-size:14px}
+  .hide{display:none}
+</style>
+</head>
+<body><div class="wrap">
+  <div class="card">
+    <h1>Pembuat Link Tes</h1>
+    <p class="mut">Halaman khusus peneliti. Tempel link Web App dari Google Apps Script, lalu salin link tes untuk dibagikan ke siswa. Tidak perlu mengedit kode.</p>
+  </div>
+  <div class="card">
+    <h2>1. Tempel link Web App</h2>
+    <input id="url" placeholder="https://script.google.com/macros/s/.../exec" autocomplete="off">
+    <div id="msg" class="warn hide"></div>
+    <button id="mk">Buat link tes</button>
+  </div>
+  <div id="res" class="card hide">
+    <h2>2. Cek penerima data</h2>
+    <p>Buka link ini. Kalau muncul tulisan <b>Penerima data aktif</b>, Apps Script sudah benar.</p>
+    <a class="btn sec" id="chk" target="_blank" rel="noopener">Cek Apps Script</a>
+    <h2 style="margin-top:18px">3. Link untuk siswa</h2>
+    <div class="out" id="link"></div>
+    <button id="cp">Salin link</button>
+    <a class="btn sec" id="open" target="_blank" rel="noopener">Coba buka tes</a>
+    <p class="mut">Satu link ini dipakai semua siswa. Kode peserta diisi siswa di layar awal. Urutan blok ("beda" dulu atau "mirip" dulu) diacak otomatis untuk setiap peserta.</p>
+    <p class="mut">Tambahkan <code>&amp;debug</code> di akhir link untuk melihat ringkasan hasil di layar akhir (untuk uji coba, bukan untuk siswa).</p>
+  </div>
+</div>
+<script>
+const $=s=>document.querySelector(s);
+$('#mk').onclick=()=>{
+  const u=$('#url').value.trim(), m=$('#msg');
+  m.className='warn hide';
+  if(!/^https:\/\/script\.google\.com\/macros\/s\/[^\/]+\/exec$/.test(u)){
+    m.textContent='Link belum sesuai. Harus diawali https://script.google.com/macros/s/ dan diakhiri /exec (bukan /dev).';
+    m.className='warn';$('#res').classList.add('hide');return;
+  }
+  const test=new URL('index.html',location.href);
+  test.searchParams.set('s',u);
+  $('#link').textContent=test.href;
+  $('#open').href=test.href; $('#chk').href=u;
+  $('#res').classList.remove('hide');
+};
+$('#cp').onclick=async()=>{
+  const t=$('#link').textContent;
+  try{await navigator.clipboard.writeText(t);$('#cp').textContent='Tersalin ✓'}
+  catch(e){const r=document.createRange();r.selectNodeContents($('#link'));getSelection().removeAllRanges();getSelection().addRange(r);$('#cp').textContent='Blok teks, salin manual'}
+};
+</script>
+</body></html>
