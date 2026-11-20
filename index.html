@@ -1,4 +1,4 @@
-\<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="id">
 <head>
 <meta charset="UTF-8">
@@ -61,7 +61,7 @@ const $=s=>document.querySelector(s), app=$('#app');
 const rnd=n=>Math.floor(Math.random()*n);
 const shuffle=a=>{for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
 
-const state={peserta:{},blockOrder:[],trials:[],practiceDone:false,data:[],sent:null};
+const state={err:'',peserta:{},blockOrder:[],trials:[],practiceDone:false,data:[],sent:null};
 
 /* ---------- bentuk & tampilan ---------- */
 function shape(type,color,x,y){
@@ -271,8 +271,9 @@ async function send(){
       const r=await fetch(CONFIG.SCRIPT_URL,opt);
       const t=(await r.text()).trim();
       if(t==='ok'||t==='ganda'){state.sent='ok';return}
-      throw new Error('balasan: '+t);
+      throw new Error('balasan server: '+t.replace(/\s+/g,' ').slice(0,140));
     }catch(e){
+      state.err=String(e&&e.message||e).slice(0,160);
       if(e instanceof TypeError){
         // Balasan tidak bisa dibaca (CORS): kirim sekali lewat no-cors, hasilnya tidak bisa diverifikasi
         try{await fetch(CONFIG.SCRIPT_URL,{...opt,mode:'no-cors'});state.sent='ok';return}catch(e2){}
@@ -293,6 +294,7 @@ async function finish(){
     summary().map(r=>`<tr><td>${r.s}</td><td>${r.n}</td><td>${r.m}</td><td>${r.acc}%</td></tr>`).join('')}</table>`:'';
   show(`<div class="card"><h1>Selesai 🎉</h1>
     <p>${msg}</p>
+    ${state.sent==='gagal'&&state.err?`<p class="mut">Info teknis (kirim ke peneliti): ${state.err.replace(/[<>&]/g,'')}</p>`:''}
     <p>Tujuan penelitian: kami ingin melihat bagaimana atensi selektif bekerja saat bentuk pengganggu mirip atau berbeda dari target, dan saat jumlahnya sedikit atau banyak. Jawabanmu tidak dinilai benar atau salah secara pribadi.</p>
     ${tbl}
     <div class="actions">${state.sent==='gagal'?'<button id="rt">Coba kirim lagi</button>':''}${debug?'<button class="sec" id="dl">Unduh CSV</button>':''}</div></div>`);
