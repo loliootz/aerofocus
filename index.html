@@ -42,7 +42,7 @@
 <script>
 /* ============ KONFIGURASI (ubah sesuai kebutuhan) ============ */
 const CONFIG = {
-  SCRIPT_URL: new URLSearchParams(location.search).get("s") || "https://script.google.com/macros/s/AKfycbyW5klzmTzVBWB3jUfFXqCFaXoYDlyIKY-yT_-p_Qta9hEdfpnyimFB4QcCc3lDfg2jHA/exec", // alamat Google Apps Script milik peneliti
+  SCRIPT_URL: new URLSearchParams(location.search).get("s") || "https://script.google.com/macros/s/AKfycbxhiqq-kIC3FJeZVUa2qGMPikqmAKGK8P4Z4YiRq1QT4WhKUvcbgSZ8h0cp5tfWduD0QA/exec", // alamat Google Apps Script milik peneliti
   PRACTICE_TRIALS: 8,      // jumlah percobaan latihan (tidak dihitung)
   TRIALS_PER_BLOCK: 50,    // percobaan per blok (2 blok => 100 soal utama; 25 soal per kondisi)
   N_SMALL: 4,              // jumlah pengganggu: sedikit
@@ -266,11 +266,21 @@ async function send(){
   const payload={peserta:{...state.peserta,selesai:new Date().toISOString()},trials:state.data};
   try{localStorage.setItem('vs_backup_'+state.peserta.kode,JSON.stringify(payload))}catch(e){}
   if(!CONFIG.SCRIPT_URL){state.sent='uji';return}
+  const opt={method:'POST',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)};
   for(let a=0;a<3;a++){
     try{
-      await fetch(CONFIG.SCRIPT_URL,{method:'POST',mode:'no-cors',headers:{'Content-Type':'text/plain;charset=utf-8'},body:JSON.stringify(payload)});
-      state.sent='ok';return;
-    }catch(e){await new Promise(r=>setTimeout(r,1500))}
+      // Coba baca balasan server supaya kegagalan simpan terdeteksi
+      const r=await fetch(CONFIG.SCRIPT_URL,opt);
+      const t=(await r.text()).trim();
+      if(t==='ok'||t==='ganda'){state.sent='ok';return}
+      throw new Error('balasan: '+t);
+    }catch(e){
+      if(e instanceof TypeError){
+        // Balasan tidak bisa dibaca (CORS): kirim sekali lewat no-cors, hasilnya tidak bisa diverifikasi
+        try{await fetch(CONFIG.SCRIPT_URL,{...opt,mode:'no-cors'});state.sent='ok';return}catch(e2){}
+      }
+      await new Promise(r=>setTimeout(r,1500));
+    }
   }
   state.sent='gagal';
 }
