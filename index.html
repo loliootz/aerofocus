@@ -134,16 +134,13 @@ function screenData(){
     <label>Kode peserta (dari peneliti)</label><input id="kode" placeholder="contoh: P01" autocomplete="off">
     <div class="row"><div><label>Usia (tahun)</label><input id="usia" type="number" inputmode="numeric" min="10" max="30"></div>
     <div><label>Kelas</label><input id="kelas" placeholder="contoh: XI-A"></div></div>
-    <label>Apakah kamu buta warna?</label>
-    <select id="bw"><option value="">Pilih…</option><option>Tidak</option><option>Ya</option><option>Tidak tahu</option></select>
     <label>Kalau berkacamata, apakah sekarang memakainya?</label>
     <select id="kc"><option value="">Pilih…</option><option>Tidak berkacamata</option><option>Berkacamata dan memakainya</option><option>Berkacamata tapi tidak memakainya</option></select>
     <div id="err" class="warn hide"></div>
     <div class="actions"><button id="go">Lanjut</button></div></div>`);
   $('#go').onclick=()=>{
-    const p={kode:$('#kode').value.trim(),usia:$('#usia').value,kelas:$('#kelas').value.trim(),buta_warna:$('#bw').value,kacamata:$('#kc').value};
-    if(!p.kode||!p.usia||!p.kelas||!p.buta_warna||!p.kacamata){const e=$('#err');e.textContent='Semua kolom wajib diisi.';e.classList.remove('hide');return}
-    if(p.buta_warna==='Ya'){const e=$('#err');e.textContent='Tes ini memakai warna merah dan biru. Mohon panggil peneliti.';e.classList.remove('hide');return}
+    const p={kode:$('#kode').value.trim(),usia:$('#usia').value,kelas:$('#kelas').value.trim(),kacamata:$('#kc').value};
+    if(!p.kode||!p.usia||!p.kelas||!p.kacamata){const e=$('#err');e.textContent='Semua kolom wajib diisi.';e.classList.remove('hide');return}
     p.perangkat=navigator.userAgent; p.layar=`${screen.width}x${screen.height}`; p.mulai=new Date().toISOString();
     state.peserta=p; state.blockOrder=decideOrder(); state.peserta.urutan_blok=state.blockOrder.join('>'); screenColor();
   };
